@@ -1,0 +1,4 @@
+*.swp
+tags
+build/
+.vscode/
