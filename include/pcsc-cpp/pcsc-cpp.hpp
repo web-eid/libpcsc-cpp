@@ -331,15 +331,36 @@ public:
     using Error::Error;
 };
 
-/** Raised when the PC/SC service is not running. */
-class ScardServiceNotRunning : public ScardError
+/** Thrown when the PC/SC service is not running. */
+class ScardServiceNotRunningError : public ScardError
 {
 public:
     using ScardError::ScardError;
 };
 
-/** Raised when no card readers are connected to the system. */
+/** Thrown when no card readers are connected to the system. */
 class ScardNoReadersError : public ScardError
+{
+public:
+    using ScardError::ScardError;
+};
+
+/** Thrown when no card is connected to the selected reader. */
+class ScardNoCardError : public ScardError
+{
+public:
+    using ScardError::ScardError;
+};
+
+/** Thrown when the card is removed from the selected reader. */
+class ScardCardRemovedError : public ScardError
+{
+public:
+    using ScardError::ScardError;
+};
+
+/** Thrown when the card transaction fails. */
+class ScardTransactionFailedError : public ScardError
 {
 public:
     using ScardError::ScardError;

@@ -50,7 +50,7 @@ inline SmartCard::Protocol convertToSmartCardProtocol(const DWORD protocol)
     case SCARD_PROTOCOL_T1:
         return SmartCard::Protocol::T1;
     default:
-        throw Error("Invalid card protocol: " + std::to_string(protocol));
+        THROW(Error, "Invalid card protocol: " + std::to_string(protocol));
     }
 }
 
@@ -63,9 +63,6 @@ std::pair<SCARDHANDLE, DWORD> connectToCard(const SCARDCONTEXT ctx, const string
 
     SCard(Connect, ctx, readerName.c_str(), SCARD_SHARE_SHARED, requestedProtocol, &cardHandle,
           &protocolOut);
-    // TODO: Handle SCARD_E_PROTO_MISMATCH?
-    // TODO: if (requestedProtocol != protocolOut) throw Error? What about Protocol::AUTO?
-    // TODO: reconnect needed under certain circumstances.
 
     return std::pair<SCARDHANDLE, DWORD> {cardHandle, protocolOut};
 }
@@ -188,7 +185,7 @@ private:
     ResponseApdu toResponse(byte_vector& responseBytes, size_t responseLength) const
     {
         if (responseLength > responseBytes.size()) {
-            throw Error("SCardTransmit: received more bytes than buffer size");
+            THROW(Error, "SCardTransmit: received more bytes than buffer size");
         }
         responseBytes.resize(responseLength);
 
@@ -208,12 +205,13 @@ private:
         case ResponseApdu::WRONG_LE_LENGTH: // See next if block.
             break;
         default:
-            throw Error("Error response: '" + bytes2hexstr({response.sw1, response.sw2})
-                        + "', protocol " + std::to_string(protocol()));
+            THROW(Error,
+                  "Error response: '" + bytes2hexstr({response.sw1, response.sw2}) + "', protocol "
+                      + std::to_string(protocol()));
         }
 
         if (response.sw1 == ResponseApdu::WRONG_LE_LENGTH) {
-            throw Error("Wrong LE length (SW1=0x6C) in response, please set LE");
+            THROW(Error, "Wrong LE length (SW1=0x6C) in response, please set LE");
         }
 
         return response;
@@ -274,7 +272,7 @@ bool SmartCard::readerHasPinPad() const
 ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Call SmartCard::transmit() inside a transaction");
+        THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
 
     return card->transmitBytes(command.toBytes());
@@ -283,7 +281,7 @@ ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 ResponseApdu SmartCard::transmitCTL(const CommandApdu& command, uint16_t lang, uint8_t minlen) const
 {
     if (!transactionInProgress) {
-        throw std::logic_error("Call SmartCard::transmit() inside a transaction");
+        THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
 
     return card->transmitBytesCTL(command.toBytes(), lang, minlen);

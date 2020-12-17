@@ -22,49 +22,38 @@
 
 #pragma once
 
-#include "pcsc-cpp/pcsc-cpp.hpp"
-#include "pcsc-cpp/pcsc-cpp-utils.hpp"
-
-#include "SCardCall.hpp"
-
-#include "pcsc-cpp/comp_winscard.hpp"
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 namespace pcsc_cpp
 {
 
-class Context
+/** Convert the given integer to a hex string. */
+template <typename T>
+inline std::string int2hexstr(const T value)
 {
-public:
-    Context()
-    {
-        SCard(EstablishContext, SCARD_SCOPE_USER, nullptr, nullptr, &contextHandle);
-        if (!contextHandle) {
-            THROW(ScardError,
-                  "Context:SCardEstablishContext: service unavailable "
-                  "(null context handle)");
-        }
-    }
+    std::ostringstream hexStringBuilder;
 
-    ~Context()
-    {
-        if (contextHandle) {
-            // Cannot throw in destructor, so cannot use the SCard() macro here.
-            auto result = SCardReleaseContext(contextHandle);
-            contextHandle = 0;
-            (void)result; // TODO: Log result here in case it is not OK.
-        }
-    }
+    hexStringBuilder << "0x" << std::setfill('0') << std::setw(sizeof(long) * 2) << std::hex
+                     << value;
 
-    SCARDCONTEXT handle() const { return contextHandle; }
+    return hexStringBuilder.str();
+}
 
-private:
-    SCARDCONTEXT contextHandle = 0;
-
-    // The rule of five (C++ Core guidelines C.21).
-    Context(const Context&) = delete;
-    Context& operator=(const Context&) = delete;
-    Context(Context&&) = delete;
-    Context& operator=(Context&&) = delete;
-};
+/** Remove absolute path prefix until "src" from the given path, '/path/to/src/main.cpp' becomes
+ * 'src/main.cpp'. */
+inline std::string removeAbsolutePathPrefix(const std::string& filePath)
+{
+    const auto lastSrc = filePath.rfind("src");
+    return lastSrc == std::string::npos ? filePath : filePath.substr(lastSrc);
+}
 
 } // namespace pcsc_cpp
+
+#define THROW_WITH_CALLER_INFO(ExceptionType, message, file, line, func)                           \
+    throw ExceptionType(std::string(message) + " in " + pcsc_cpp::removeAbsolutePathPrefix(file)   \
+                        + ':' + std::to_string(line) + ':' + func)
+
+#define THROW(ExceptionType, message)                                                              \
+    THROW_WITH_CALLER_INFO(ExceptionType, message, __FILE__, __LINE__, __func__)

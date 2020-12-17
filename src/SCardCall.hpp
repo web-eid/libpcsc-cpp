@@ -22,7 +22,9 @@
 
 #pragma once
 
+#include "pcsc-cpp/pcsc-cpp.hpp"
 #include "pcsc-cpp/comp_winscard.hpp"
+#include "pcsc-cpp/pcsc-cpp-utils.hpp"
 
 #include <string>
 
@@ -30,21 +32,17 @@ namespace pcsc_cpp
 {
 
 inline std::string buildErrorMessage(const char* callerFunctionName, const char* scardFunctionName,
-                                     const LONG result)
+                                     const LONG result, const char* file, int line)
 {
-    return std::string(callerFunctionName) + ':' + scardFunctionName + ": "
-        + std::to_string(result);
+    return std::string(scardFunctionName) + " returned " + int2hexstr(result) + " in "
+        + removeAbsolutePathPrefix(file) + ':' + std::to_string(line) + ':' + callerFunctionName;
 }
 
 template <typename Func, typename... Args>
 void SCardCall(const char* callerFunctionName, const char* file, int line,
                const char* scardFunctionName, Func scardFunction, Args... args)
 {
-    // TODO: Add logging, for example:
-    // DEBUG(callerFunctionName, file, line, "%s: %s (0x%08x)", scardFunctionName,
-    //       pcsc_stringify_error(result), result);
-    (void)file;
-    (void)line;
+    // TODO: Add logging - or is exception error message enough?
     const uint32_t result = scardFunction(args...);
 
     // TODO: Add more cases when needed.
@@ -53,12 +51,23 @@ void SCardCall(const char* callerFunctionName, const char* file, int line,
         return;
     case SCARD_E_NO_SERVICE:
     case SCARD_E_SERVICE_STOPPED:
-        throw ScardServiceNotRunning(
-            buildErrorMessage(callerFunctionName, scardFunctionName, result));
+        throw ScardServiceNotRunningError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_E_NO_READERS_AVAILABLE:
-        throw ScardNoReadersError(buildErrorMessage(callerFunctionName, scardFunctionName, result));
+        throw ScardNoReadersError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
+    case SCARD_E_NO_SMARTCARD:
+        throw ScardNoCardError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
+    case SCARD_W_REMOVED_CARD:
+        throw ScardCardRemovedError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
+    case SCARD_E_NOT_TRANSACTED:
+        throw ScardTransactionFailedError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     default:
-        throw ScardError(buildErrorMessage(callerFunctionName, scardFunctionName, result));
+        throw ScardError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     }
 }
 

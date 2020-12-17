@@ -59,7 +59,7 @@ TEST(pcsc_cpp_test, listReadersNoService)
 
     PcscMock::addReturnValueForScardFunctionCall("SCardEstablishContext", SCARD_E_NO_SERVICE);
 
-    EXPECT_THROW({ listReaders(); }, ScardServiceNotRunning);
+    EXPECT_THROW({ listReaders(); }, ScardServiceNotRunningError);
 
     PcscMock::reset();
 }

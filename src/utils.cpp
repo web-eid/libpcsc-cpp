@@ -21,6 +21,7 @@
  */
 
 #include "pcsc-cpp/pcsc-cpp.hpp"
+#include "pcsc-cpp/pcsc-cpp-utils.hpp"
 
 #include <sstream>
 #include <iomanip>
@@ -55,11 +56,13 @@ class UnexpectedResponseError : public Error
 public:
     explicit UnexpectedResponseError(const CommandApdu& command,
                                      const byte_vector& expectedResponseBytes,
-                                     const ResponseApdu& response) :
+                                     const ResponseApdu& response, const char* file, const int line,
+                                     const char* callerFunctionName) :
         Error("transmitApduWithExpectedResponse(): Unexpected response to command '"s
               + bytes2hexstr(command.toBytes()) + "' - expected '"s
-              + bytes2hexstr(expectedResponseBytes) + "', got '"s
-              + bytes2hexstr(response.toBytes()))
+              + bytes2hexstr(expectedResponseBytes) + "', got '"s + bytes2hexstr(response.toBytes())
+              + " in " + removeAbsolutePathPrefix(file) + ':' + std::to_string(line) + ':'
+              + callerFunctionName)
     {
     }
 };
@@ -95,7 +98,8 @@ void transmitApduWithExpectedResponse(const SmartCard& card, const CommandApdu& 
 {
     const auto response = card.transmit(command);
     if (response.toBytes() != expectedResponseBytes) {
-        throw UnexpectedResponseError(command, expectedResponseBytes, response);
+        throw UnexpectedResponseError(command, expectedResponseBytes, response, __FILE__, __LINE__,
+                                      __func__);
     }
 }
 
@@ -111,17 +115,19 @@ size_t readDataLengthFromAsn1(const SmartCard& card)
     // Verify expected DER header, first byte must be SEQUENCE.
     if (response.data[0] != DER_SEQUENCE_TYPE_TAG) {
         // TODO: more specific exception
-        throw Error("readDataLengthFromAsn1(): First byte must be SEQUENCE (0x30), but is 0x"s
-                    + bytes2hexstr({response.data[0]}));
+        THROW(Error,
+              "readDataLengthFromAsn1(): First byte must be SEQUENCE (0x30), but is 0x"s
+                  + bytes2hexstr({response.data[0]}));
     }
 
     // TODO: support other lenghts besides 2.
     // Assume 2-byte length, so second byte must be 0x82.
     if (response.data[1] != DER_TWO_BYTE_LENGTH) {
         // TODO: more specific exception
-        throw Error("readDataLengthFromAsn1(): Second byte must be two-byte length indicator "s
-                    "(0x82), but is 0x"s
-                    + bytes2hexstr({response.data[1]}));
+        THROW(Error,
+              "readDataLengthFromAsn1(): Second byte must be two-byte length indicator "s
+              "(0x82), but is 0x"s
+                  + bytes2hexstr({response.data[1]}));
     }
 
     // Read 2-byte length field at offset 2 and 3.
@@ -130,8 +136,9 @@ size_t readDataLengthFromAsn1(const SmartCard& card)
     const auto length = size_t((response.data[2] << 8) + response.data[3] + 4);
     if (length < 128 || length > 0x0f00) {
         // TODO: more specific exception
-        throw Error("readDataLengthFromAsn1(): Unexpected data length in DER header: "s
-                    + std::to_string(length));
+        THROW(Error,
+              "readDataLengthFromAsn1(): Unexpected data length in DER header: "s
+                  + std::to_string(length));
     }
 
     return length;
@@ -162,7 +169,7 @@ byte_vector readBinary(const SmartCard& card, const size_t length, const size_t 
 
     if (resultBytes.size() != length) {
         // TODO: more specific exception
-        throw Error("readBinary(): Invalid length: "s + std::to_string(resultBytes.size()));
+        THROW(Error, "readBinary(): Invalid length: "s + std::to_string(resultBytes.size()));
     }
 
     return resultBytes;
