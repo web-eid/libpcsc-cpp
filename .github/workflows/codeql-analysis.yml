@@ -10,7 +10,7 @@
 # supported CodeQL languages.
 # ******** NOTE ********
 
-name: "CodeQL"
+name: CodeQL code analysis
 
 on:
   push:
@@ -19,7 +19,7 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ main ]
   schedule:
-    - cron: '17 18 * * 5'
+    - cron: '18 17 * * 4'
 
 jobs:
   analyze:
