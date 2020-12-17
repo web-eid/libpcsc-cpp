@@ -1,5 +1,7 @@
 # libpcsc-cpp
 
+![European Regional Development Fund](https://github.com/e-gov/RIHA-Frontend/raw/master/logo/EU/EU.png)
+
 C++ library for accessing smart cards using the PC/SC API.
 
 ## Usage

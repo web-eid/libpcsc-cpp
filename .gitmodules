@@ -1,3 +1,3 @@
 [submodule "tests/lib/libpcsc-mock"]
 	path = tests/lib/libpcsc-mock
-	url = https://github.com/web-eid/libpcsc-mock
+	url = ../libpcsc-mock
