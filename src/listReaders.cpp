@@ -75,6 +75,9 @@ std::vector<SCARD_READERSTATE> getReaderStates(const SCARDCONTEXT ctx, const str
                                 }});
     }
 
+    if (readerStates.empty())
+        return {};
+
     SCard(GetStatusChange, ctx, 0, readerStates.data(), DWORD(readerStates.size()));
 
     return readerStates;
