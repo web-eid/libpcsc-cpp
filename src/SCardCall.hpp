@@ -54,10 +54,16 @@ void SCardCall(const char* callerFunctionName, const char* file, int line,
         throw ScardServiceNotRunningError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_E_NO_READERS_AVAILABLE:
+    case SCARD_E_READER_UNAVAILABLE:
         throw ScardNoReadersError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_E_NO_SMARTCARD:
         throw ScardNoCardError(
+            buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
+    case SCARD_E_NOT_READY:
+    case SCARD_E_INVALID_VALUE:
+    case SCARD_E_COMM_DATA_LOST:
+        throw ScardCardCommunicationFailedError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_W_REMOVED_CARD:
         throw ScardCardRemovedError(

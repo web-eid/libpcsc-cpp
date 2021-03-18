@@ -41,7 +41,7 @@ inline std::string int2hexstr(const T value)
     return hexStringBuilder.str();
 }
 
-/** Remove absolute path prefix until "src" from the given path, '/path/to/src/main.cpp' becomes
+/** Remove absolute path prefix until 'src' from the given path, '/path/to/src/main.cpp' becomes
  * 'src/main.cpp'. */
 inline std::string removeAbsolutePathPrefix(const std::string& filePath)
 {

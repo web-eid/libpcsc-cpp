@@ -352,6 +352,13 @@ public:
     using ScardError::ScardError;
 };
 
+/** Thrown when communication with the card or reader fails. */
+class ScardCardCommunicationFailedError : public ScardError
+{
+public:
+    using ScardError::ScardError;
+};
+
 /** Thrown when the card is removed from the selected reader. */
 class ScardCardRemovedError : public ScardError
 {
