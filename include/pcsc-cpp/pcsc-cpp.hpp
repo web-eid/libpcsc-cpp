@@ -195,7 +195,7 @@ class CardImpl;
 using CardImplPtr = std::unique_ptr<CardImpl>;
 
 /** PIN pad PIN entry timer timeout */
-constexpr uint8_t PIN_PAD_PIN_ENTRY_TIMEOUT = 30;
+constexpr uint8_t PIN_PAD_PIN_ENTRY_TIMEOUT = 90; // 1 minute, 30 seconds
 
 /** SmartCard manages bidirectional input/output to an ISO 7816 smart card. */
 class SmartCard
