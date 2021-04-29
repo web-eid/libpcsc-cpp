@@ -45,10 +45,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:Ws2_32>
 )
 
-# Common compile options.
-
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # PC/SC API dependencies.
 
 add_library(pcsc INTERFACE)

@@ -209,7 +209,7 @@ public:
     {
     public:
         TransactionGuard(const CardImpl& CardImpl, bool& inProgress);
-        ~TransactionGuard() noexcept(false);
+        ~TransactionGuard();
 
         // The rule of five (C++ Core guidelines C.21).
         TransactionGuard(const TransactionGuard&) = delete;
