@@ -242,12 +242,14 @@ SmartCard::TransactionGuard::TransactionGuard(const CardImpl& card, bool& inProg
     inProgress = true;
 }
 
-SmartCard::TransactionGuard::~TransactionGuard() noexcept(false)
+SmartCard::TransactionGuard::~TransactionGuard()
 {
     inProgress = false;
-    // endTransaction() may throw, should be OK as TransactionGuard does not own resources.
-    // TODO: Log in case endTransaction() throws.
-    card.endTransaction();
+    try {
+        card.endTransaction();
+    } catch (...) {
+        // Ignore exceptions in destructor.
+    }
 }
 
 SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, byte_vector atr) :
