@@ -28,6 +28,10 @@
 
 #include <string>
 
+#ifdef _WIN32
+#include <winerror.h>
+#endif // _WIN32
+
 namespace pcsc_cpp
 {
 
@@ -58,11 +62,17 @@ void SCardCall(const char* callerFunctionName, const char* file, int line,
         throw ScardNoReadersError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_E_NO_SMARTCARD:
+#ifdef _WIN32
+    case ERROR_NO_MEDIA_IN_DRIVE:
+#endif // _WIN32
         throw ScardNoCardError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_E_NOT_READY:
     case SCARD_E_INVALID_VALUE:
     case SCARD_E_COMM_DATA_LOST:
+#ifdef _WIN32
+    case ERROR_IO_DEVICE:
+#endif // _WIN32
         throw ScardCardCommunicationFailedError(
             buildErrorMessage(callerFunctionName, scardFunctionName, result, file, line));
     case SCARD_W_REMOVED_CARD:
