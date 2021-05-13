@@ -70,6 +70,7 @@ void SCardCall(const char* callerFunctionName, const char* file, int line,
     case SCARD_E_NOT_READY:
     case SCARD_E_INVALID_VALUE:
     case SCARD_E_COMM_DATA_LOST:
+    case SCARD_W_RESET_CARD:
 #ifdef _WIN32
     case ERROR_IO_DEVICE:
 #endif // _WIN32
