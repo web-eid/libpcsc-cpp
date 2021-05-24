@@ -222,7 +222,7 @@ public:
         bool& inProgress;
     };
 
-    SmartCard(const ContextPtr& context, const string_t& readerName, byte_vector atr);
+    SmartCard(const ContextPtr& context, const string_t& readerName, const byte_vector& atr);
     ~SmartCard();
 
     // The rule of five.
