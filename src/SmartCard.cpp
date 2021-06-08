@@ -79,17 +79,22 @@ public:
         cardHandle(cardParams.first), _protocol({cardParams.second, sizeof(SCARD_IO_REQUEST)})
     {
         // TODO: debug("Protocol: " + to_string(protocol()));
-        DWORD size = 0;
-        BYTE feature[256];
-        SCard(Control, cardHandle, DWORD(CM_IOCTL_GET_FEATURE_REQUEST), nullptr, 0u, feature,
-              DWORD(sizeof(feature)), &size);
-        for (unsigned char* p = feature; DWORD(p - feature) < size;) {
-            unsigned int tag = *p++;
-            unsigned int len = *p++;
-            unsigned int value = 0;
-            for (unsigned int i = 0; i < len; ++i)
-                value |= *p++ << 8 * i;
-            features[DRIVER_FEATURES(tag)] = ntohl(value);
+        try {
+            DWORD size = 0;
+            BYTE feature[256];
+            SCard(Control, cardHandle, DWORD(CM_IOCTL_GET_FEATURE_REQUEST), nullptr, 0u, feature,
+                  DWORD(sizeof(feature)), &size);
+            for (unsigned char* p = feature; DWORD(p - feature) < size;) {
+                unsigned int tag = *p++;
+                unsigned int len = *p++;
+                unsigned int value = 0;
+                for (unsigned int i = 0; i < len; ++i)
+                    value |= *p++ << 8 * i;
+                features[DRIVER_FEATURES(tag)] = ntohl(value);
+            }
+        } catch (const ScardError&) {
+            // Ignore driver errors during card feature requests.
+            // TODO: debug(error)
         }
     }
 
