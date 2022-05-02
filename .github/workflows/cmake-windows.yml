@@ -21,19 +21,13 @@ jobs:
         vcpkgArguments: gtest:x64-windows
         vcpkgTriplet: x64-windows
         vcpkgDirectory: ${{runner.workspace}}/vcpkg/
-        vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
-
-    - name: Create build directory
-      run: mkdir build
+        vcpkgGitCommitId: 9b064ff07b987c8f213fdbf4358122fd4fe38ef1
 
     - name: Configure CMake
-      working-directory: ${{github.workspace}}/build
-      run: cmake -A x64 "-DCMAKE_TOOLCHAIN_FILE=${{runner.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DCMAKE_BUILD_TYPE=${env:BUILD_TYPE}" ..
+      run: cmake -A x64 "-DCMAKE_TOOLCHAIN_FILE=${{runner.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DCMAKE_BUILD_TYPE=${env:BUILD_TYPE}" -B build -S .
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${env:BUILD_TYPE}
+      run: cmake --build build --config ${env:BUILD_TYPE}
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -V -C ${env:BUILD_TYPE}
+      run: ctest -V -C ${env:BUILD_TYPE} --test-dir build
