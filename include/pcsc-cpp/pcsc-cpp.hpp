@@ -42,6 +42,12 @@ using string_t = std::string;
 class Context;
 using ContextPtr = std::shared_ptr<Context>;
 
+/** Returns the value of the response status bytes SW1 and SW2 as a single status word SW. */
+inline constexpr uint16_t toSW(byte_vector::value_type sw1, byte_vector::value_type sw2)
+{
+    return sw1 << 8 | sw2;
+}
+
 /** Struct that wraps response APDUs. */
 struct ResponseApdu
 {
@@ -92,6 +98,8 @@ struct ResponseApdu
 
         return bytes;
     }
+
+    uint16_t toSW() const { return pcsc_cpp::toSW(sw1, sw2); }
 
     bool isOK() const { return sw1 == OK && sw2 == 0x00; }
 
