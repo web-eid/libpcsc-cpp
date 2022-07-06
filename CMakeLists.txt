@@ -58,7 +58,7 @@ else()
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(PCSC libpcsclite REQUIRED)
   target_include_directories(${PROJECT_NAME} PRIVATE ${PCSC_INCLUDE_DIRS})
-  target_link_libraries(pcsc INTERFACE ${PCSC_LIBRARIES})
+  target_link_libraries(pcsc INTERFACE ${PCSC_LINK_LIBRARIES})
 endif()
 
 # Common testing options.
