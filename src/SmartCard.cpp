@@ -31,6 +31,7 @@
 #include <arpa/inet.h>
 #endif
 
+#include <array>
 #include <map>
 #include <utility>
 
@@ -81,10 +82,10 @@ public:
         // TODO: debug("Protocol: " + to_string(protocol()));
         try {
             DWORD size = 0;
-            BYTE feature[256];
-            SCard(Control, cardHandle, DWORD(CM_IOCTL_GET_FEATURE_REQUEST), nullptr, 0u, feature,
-                  DWORD(sizeof(feature)), &size);
-            for (unsigned char* p = feature; DWORD(p - feature) < size;) {
+            std::array<BYTE, 256> feature {};
+            SCard(Control, cardHandle, DWORD(CM_IOCTL_GET_FEATURE_REQUEST), nullptr, 0U,
+                  feature.data(), DWORD(feature.size()), &size);
+            for (auto p = feature.cbegin(); DWORD(std::distance(feature.cbegin(), p)) < size;) {
                 unsigned int tag = *p++;
                 unsigned int len = *p++;
                 unsigned int value = 0;
@@ -108,8 +109,16 @@ public:
         }
     }
 
+    // The rule of five (C++ Core guidelines C.21).
+    CardImpl(const CardImpl& other) = delete;
+    CardImpl(CardImpl&& other) noexcept = delete;
+    CardImpl& operator=(const CardImpl& other) = delete;
+    CardImpl& operator=(CardImpl&& other) noexcept = delete;
+
     bool readerHasPinPad() const
     {
+        if (getenv("SMARTCARDPP_NOPINPAD"))
+            return false;
         return features.find(FEATURE_VERIFY_PIN_START) != features.cend()
             || features.find(FEATURE_VERIFY_PIN_DIRECT) != features.cend();
     }
@@ -169,7 +178,7 @@ public:
         if (features.find(FEATURE_VERIFY_PIN_FINISH) != features.cend()) {
             DWORD finish = features.at(FEATURE_VERIFY_PIN_FINISH);
             responseLength = DWORD(responseBytes.size());
-            SCard(Control, cardHandle, finish, nullptr, 0u, LPVOID(responseBytes.data()),
+            SCard(Control, cardHandle, finish, nullptr, 0U, LPVOID(responseBytes.data()),
                   DWORD(responseBytes.size()), &responseLength);
         }
 
@@ -257,9 +266,9 @@ SmartCard::TransactionGuard::~TransactionGuard()
     }
 }
 
-SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, const byte_vector& atr) :
+SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, byte_vector atr) :
     card(std::make_unique<CardImpl>(connectToCard(contex->handle(), readerName))),
-    _protocol(convertToSmartCardProtocol(card->protocol())), _atr(atr)
+    _protocol(convertToSmartCardProtocol(card->protocol())), _atr(std::move(atr))
 {
     // TODO: debug("Card ATR -> " + bytes2hexstr(atr));
 }
