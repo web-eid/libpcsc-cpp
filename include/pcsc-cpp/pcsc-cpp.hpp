@@ -62,8 +62,8 @@ struct ResponseApdu
         WRONG_LE_LENGTH = 0x6c
     };
 
-    byte_vector::value_type sw1;
-    byte_vector::value_type sw2;
+    byte_vector::value_type sw1 {};
+    byte_vector::value_type sw2 {};
 
     byte_vector data;
 
@@ -148,9 +148,8 @@ struct CommandApdu
             if (useLe) {
                 return CommandApdu {bytes[0], bytes[1],      bytes[2],
                                     bytes[3], byte_vector(), bytes[4]};
-            } else {
-                throw std::invalid_argument("Command APDU size 5 is invalid without LE");
             }
+            throw std::invalid_argument("Command APDU size 5 is invalid without LE");
         }
 
         if (bytes.size() == 6 && useLe) {
@@ -168,10 +167,9 @@ struct CommandApdu
                                 bytes[3],
                                 byte_vector(dataStart, bytes.cend() - 1),
                                 *(bytes.cend() - 1)};
-        } else {
-            return CommandApdu {bytes[0], bytes[1], bytes[2], bytes[3],
-                                byte_vector(dataStart, bytes.cend())};
         }
+        return CommandApdu {bytes[0], bytes[1], bytes[2], bytes[3],
+                            byte_vector(dataStart, bytes.cend())};
     }
 
     byte_vector toBytes() const
@@ -230,7 +228,7 @@ public:
         bool& inProgress;
     };
 
-    SmartCard(const ContextPtr& context, const string_t& readerName, const byte_vector& atr);
+    SmartCard(const ContextPtr& context, const string_t& readerName, byte_vector atr);
     ~SmartCard();
 
     // The rule of five.
