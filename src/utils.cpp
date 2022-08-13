@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Estonian Information System Authority
+ * Copyright (c) 2020-2022 Estonian Information System Authority
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,9 +130,7 @@ size_t readDataLengthFromAsn1(const SmartCard& card)
                   + bytes2hexstr({response.data[1]}));
     }
 
-    // Read 2-byte length field at offset 2 and 3.
-    // TODO: the +4 comes from EstEID example, won't get the full ASN data without this, dig out the
-    // reason (probably DER footer)
+    // Read 2-byte length field at offset 2 and 3 and add the 4 DER length bytes.
     const auto length = size_t((response.data[2] << 8) + response.data[3] + 4);
     if (length < 128 || length > 0x0f00) {
         // TODO: more specific exception
