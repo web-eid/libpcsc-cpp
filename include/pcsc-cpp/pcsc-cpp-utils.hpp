@@ -57,3 +57,10 @@ inline std::string removeAbsolutePathPrefix(const std::string& filePath)
 
 #define THROW(ExceptionType, message)                                                              \
     THROW_WITH_CALLER_INFO(ExceptionType, message, __FILE__, __LINE__, __func__)
+
+#define REQUIRE_NON_NULL(val)                                                                      \
+    if (!val) {                                                                                    \
+        throw std::logic_error("Null " + std::string(#val) + " in "                                \
+                               + pcsc_cpp::removeAbsolutePathPrefix(__FILE__) + ':'                \
+                               + std::to_string(__LINE__) + ':' + __func__);                       \
+    }
