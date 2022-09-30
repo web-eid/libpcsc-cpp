@@ -273,20 +273,23 @@ SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, byte_
     // TODO: debug("Card ATR -> " + bytes2hexstr(atr));
 }
 
+SmartCard::SmartCard() = default;
 SmartCard::~SmartCard() = default;
 
 SmartCard::TransactionGuard SmartCard::beginTransaction()
 {
+    REQUIRE_NON_NULL(card);
     return SmartCard::TransactionGuard {*card, transactionInProgress};
 }
 
 bool SmartCard::readerHasPinPad() const
 {
-    return card->readerHasPinPad();
+    return card ? card->readerHasPinPad() : false;
 }
 
 ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 {
+    REQUIRE_NON_NULL(card);
     if (!transactionInProgress) {
         THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
@@ -296,6 +299,7 @@ ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 
 ResponseApdu SmartCard::transmitCTL(const CommandApdu& command, uint16_t lang, uint8_t minlen) const
 {
+    REQUIRE_NON_NULL(card);
     if (!transactionInProgress) {
         THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
