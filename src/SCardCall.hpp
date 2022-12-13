@@ -47,7 +47,14 @@ void SCardCall(const char* callerFunctionName, const char* file, int line,
                const char* scardFunctionName, Func scardFunction, Args... args)
 {
     // TODO: Add logging - or is exception error message enough?
+
+#ifdef __APPLE__
+    // Apple version of pcsc-lite uses unsigned code constants
     const uint32_t result = scardFunction(args...);
+#else
+    // Standard version of pcsc-lite uses signed code constants
+    const LONG result = scardFunction(args...);
+#endif
 
     // TODO: Add more cases when needed.
     switch (result) {
