@@ -11,21 +11,15 @@ jobs:
     container: mrts/qt-cmake-gtest-valgrind-ubuntu:v1.8
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: Create build directory
-      run: mkdir build
-
     - name: Configure CMake
-      working-directory: ${{github.workspace}}/build
-      run: cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+      run: cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
+      run: cmake --build build --config $BUILD_TYPE
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -V -C $BUILD_TYPE
+      run: ctest -V -C $BUILD_TYPE --test-dir build

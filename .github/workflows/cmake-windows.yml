@@ -11,12 +11,13 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
+
     - name: Prepare vcpkg and libraries
-      uses: lukka/run-vcpkg@v6
+      uses: lukka/run-vcpkg@v7
       with:
         vcpkgArguments: gtest:x64-windows
         vcpkgTriplet: x64-windows
