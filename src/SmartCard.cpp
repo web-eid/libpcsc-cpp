@@ -57,12 +57,12 @@ inline SmartCard::Protocol convertToSmartCardProtocol(const DWORD protocol)
 
 std::pair<SCARDHANDLE, DWORD> connectToCard(const SCARDCONTEXT ctx, const string_t& readerName)
 {
-    const auto requestedProtocol =
+    const unsigned requestedProtocol =
         SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1; // Let PCSC auto-select protocol.
     DWORD protocolOut = SCARD_PROTOCOL_UNDEFINED;
     SCARDHANDLE cardHandle = 0;
 
-    SCard(Connect, ctx, readerName.c_str(), SCARD_SHARE_SHARED, requestedProtocol, &cardHandle,
+    SCard(Connect, ctx, readerName.c_str(), DWORD(SCARD_SHARE_SHARED), requestedProtocol, &cardHandle,
           &protocolOut);
 
     return std::pair<SCARDHANDLE, DWORD> {cardHandle, protocolOut};
@@ -79,7 +79,7 @@ public:
     explicit CardImpl(std::pair<SCARDHANDLE, DWORD> cardParams) :
         cardHandle(cardParams.first), _protocol({cardParams.second, sizeof(SCARD_IO_REQUEST)})
     {
-        // TODO: debug("Protocol: " + to_string(protocol()));
+        // TODO: debug("Protocol: " + to_string(protocol()))
         try {
             DWORD size = 0;
             std::array<BYTE, 256> feature {};
@@ -126,9 +126,9 @@ public:
     ResponseApdu transmitBytes(const byte_vector& commandBytes) const
     {
         auto responseBytes = byte_vector(ResponseApdu::MAX_SIZE, 0);
-        DWORD responseLength = DWORD(responseBytes.size());
+        auto responseLength = DWORD(responseBytes.size());
 
-        // TODO: debug("Sending:  " + bytes2hexstr(commandBytes));
+        // TODO: debug("Sending:  " + bytes2hexstr(commandBytes))
 
         SCard(Transmit, cardHandle, &_protocol, commandBytes.data(), DWORD(commandBytes.size()),
               nullptr, responseBytes.data(), &responseLength);
@@ -148,7 +148,7 @@ public:
         uint8_t PINFrameOffset = 0;
         uint8_t PINLengthOffset = 0;
         byte_vector cmd(sizeof(PIN_VERIFY_STRUCTURE));
-        PIN_VERIFY_STRUCTURE* data = (PIN_VERIFY_STRUCTURE*)cmd.data();
+        auto* data = (PIN_VERIFY_STRUCTURE*)cmd.data();
         data->bTimerOut = PIN_PAD_PIN_ENTRY_TIMEOUT;
         data->bTimerOut2 = PIN_PAD_PIN_ENTRY_TIMEOUT;
         data->bmFormatString =
@@ -187,7 +187,7 @@ public:
 
     void beginTransaction() const { SCard(BeginTransaction, cardHandle); }
 
-    void endTransaction() const { SCard(EndTransaction, cardHandle, SCARD_LEAVE_CARD); }
+    void endTransaction() const { SCard(EndTransaction, cardHandle, DWORD(SCARD_LEAVE_CARD)); }
 
     DWORD protocol() const { return _protocol.dwProtocol; }
 
@@ -203,7 +203,7 @@ private:
         }
         responseBytes.resize(responseLength);
 
-        // TODO: debug("Received: " + bytes2hexstr(responseBytes));
+        // TODO: debug("Received: " + bytes2hexstr(responseBytes))
 
         auto response = ResponseApdu::fromBytes(responseBytes);
 
@@ -244,8 +244,7 @@ private:
                                  newResponse.data.cend());
         }
 
-        response.sw1 = ResponseApdu::OK;
-        response.sw2 = 0;
+        response = { ResponseApdu::OK, 0 };
     }
 };
 
@@ -270,7 +269,7 @@ SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, byte_
     card(std::make_unique<CardImpl>(connectToCard(contex->handle(), readerName))),
     _protocol(convertToSmartCardProtocol(card->protocol())), _atr(std::move(atr))
 {
-    // TODO: debug("Card ATR -> " + bytes2hexstr(atr));
+    // TODO: debug("Card ATR -> " + bytes2hexstr(atr))
 }
 
 SmartCard::SmartCard() = default;
@@ -278,7 +277,7 @@ SmartCard::~SmartCard() = default;
 
 SmartCard::TransactionGuard SmartCard::beginTransaction()
 {
-    REQUIRE_NON_NULL(card);
+    REQUIRE_NON_NULL(card)
     return SmartCard::TransactionGuard {*card, transactionInProgress};
 }
 
@@ -289,7 +288,7 @@ bool SmartCard::readerHasPinPad() const
 
 ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 {
-    REQUIRE_NON_NULL(card);
+    REQUIRE_NON_NULL(card)
     if (!transactionInProgress) {
         THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
