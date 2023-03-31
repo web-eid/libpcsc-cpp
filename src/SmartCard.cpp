@@ -46,12 +46,14 @@ using namespace pcsc_cpp;
 inline SmartCard::Protocol convertToSmartCardProtocol(const DWORD protocol)
 {
     switch (protocol) {
+    case SCARD_PROTOCOL_UNDEFINED:
+        return SmartCard::Protocol::UNDEFINED;
     case SCARD_PROTOCOL_T0:
         return SmartCard::Protocol::T0;
     case SCARD_PROTOCOL_T1:
         return SmartCard::Protocol::T1;
     default:
-        THROW(Error, "Invalid card protocol: " + std::to_string(protocol));
+        THROW(Error, "Unsupported card protocol: " + std::to_string(protocol));
     }
 }
 
@@ -62,8 +64,8 @@ std::pair<SCARDHANDLE, DWORD> connectToCard(const SCARDCONTEXT ctx, const string
     DWORD protocolOut = SCARD_PROTOCOL_UNDEFINED;
     SCARDHANDLE cardHandle = 0;
 
-    SCard(Connect, ctx, readerName.c_str(), DWORD(SCARD_SHARE_SHARED), requestedProtocol, &cardHandle,
-          &protocolOut);
+    SCard(Connect, ctx, readerName.c_str(), DWORD(SCARD_SHARE_SHARED), requestedProtocol,
+          &cardHandle, &protocolOut);
 
     return std::pair<SCARDHANDLE, DWORD> {cardHandle, protocolOut};
 }
@@ -90,7 +92,7 @@ public:
                 unsigned int len = *p++;
                 unsigned int value = 0;
                 for (unsigned int i = 0; i < len; ++i)
-                    value |= *p++ << 8 * i;
+                    value |= (unsigned int)(*p++ << 8) * i;
                 features[DRIVER_FEATURES(tag)] = ntohl(value);
             }
         } catch (const ScardError&) {
@@ -152,10 +154,10 @@ public:
         data->bTimerOut = PIN_PAD_PIN_ENTRY_TIMEOUT;
         data->bTimerOut2 = PIN_PAD_PIN_ENTRY_TIMEOUT;
         data->bmFormatString =
-            FormatASCII | AlignLeft | PINFrameOffset << 4 | PINFrameOffsetUnitBits;
+            FormatASCII | AlignLeft | uint8_t(PINFrameOffset << 4) | PINFrameOffsetUnitBits;
         data->bmPINBlockString = PINLengthNone << 5 | PINFrameSizeAuto;
         data->bmPINLengthFormat = PINLengthOffsetUnitBits | PINLengthOffset;
-        data->wPINMaxExtraDigit = minlen << 8 | 12;
+        data->wPINMaxExtraDigit = uint16_t(minlen << 8) | 12;
         data->bEntryValidationCondition = ValidOnKeyPressed;
         data->bNumberMessage = CCIDDefaultInvitationMessage;
         data->wLangId = lang;
@@ -244,7 +246,7 @@ private:
                                  newResponse.data.cend());
         }
 
-        response = { ResponseApdu::OK, 0 };
+        response = {ResponseApdu::OK, 0};
     }
 };
 
@@ -267,7 +269,7 @@ SmartCard::TransactionGuard::~TransactionGuard()
 
 SmartCard::SmartCard(const ContextPtr& contex, const string_t& readerName, byte_vector atr) :
     card(std::make_unique<CardImpl>(connectToCard(contex->handle(), readerName))),
-    _protocol(convertToSmartCardProtocol(card->protocol())), _atr(std::move(atr))
+    _atr(std::move(atr)), _protocol(convertToSmartCardProtocol(card->protocol()))
 {
     // TODO: debug("Card ATR -> " + bytes2hexstr(atr))
 }

@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.8.0)
-if(POLICY CMP0092)
-  cmake_policy(SET CMP0092 NEW)
-endif()
+cmake_minimum_required(VERSION 3.16)
 
 project(pcsc-cpp)
 
@@ -49,16 +46,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 add_library(pcsc INTERFACE)
 if(MSVC)
-  # no extra includes required
   target_link_libraries(pcsc INTERFACE winscard)
 elseif(APPLE)
-  # no extra includes required
   target_link_libraries(pcsc INTERFACE "-framework PCSC")
 else()
   find_package(PkgConfig REQUIRED)
-  pkg_check_modules(PCSC libpcsclite REQUIRED)
+  pkg_check_modules(PCSC libpcsclite REQUIRED IMPORTED_TARGET)
   target_include_directories(${PROJECT_NAME} PRIVATE ${PCSC_INCLUDE_DIRS})
-  target_link_libraries(pcsc INTERFACE ${PCSC_LIBRARIES})
+  target_link_libraries(pcsc INTERFACE PkgConfig::PCSC)
 endif()
 
 # Common testing options.

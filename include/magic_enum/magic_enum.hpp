@@ -158,18 +158,16 @@ namespace detail
     };
 
     template <typename E>
-    inline constexpr int
-        min_v = static_cast<int>(enum_range<E>::min
-                                         > (std::numeric_limits<std::underlying_type_t<E>>::min)()
-                                     ? enum_range<E>::min
-                                     : (std::numeric_limits<std::underlying_type_t<E>>::min)());
+    inline constexpr int min_v = static_cast<int>(
+        enum_range<E>::min > (std::numeric_limits<std::underlying_type_t<E>>::min)()
+            ? enum_range<E>::min
+            : (std::numeric_limits<std::underlying_type_t<E>>::min)());
 
     template <typename E>
-    inline constexpr int
-        max_v = static_cast<int>(enum_range<E>::max
-                                         < (std::numeric_limits<std::underlying_type_t<E>>::max)()
-                                     ? enum_range<E>::max
-                                     : (std::numeric_limits<std::underlying_type_t<E>>::max)());
+    inline constexpr int max_v = static_cast<int>(
+        enum_range<E>::max < (std::numeric_limits<std::underlying_type_t<E>>::max)()
+            ? enum_range<E>::max
+            : (std::numeric_limits<std::underlying_type_t<E>>::max)());
 
     template <typename E>
     [[nodiscard]] constexpr auto range()
@@ -310,7 +308,7 @@ namespace detail
     using enable_if_enum_t = std::enable_if_t<std::is_enum_v<remove_cvref_t<T>>, remove_cvref_t<T>>;
 
     template <typename E, typename D>
-    inline constexpr bool check_enum_v = std::is_same_v<remove_cvref_t<E>, D>&& std::is_enum_v<D>;
+    inline constexpr bool check_enum_v = std::is_same_v<remove_cvref_t<E>, D> && std::is_enum_v<D>;
 
     template <typename T, bool = std::is_enum_v<T>>
     struct is_scoped_enum : std::false_type
