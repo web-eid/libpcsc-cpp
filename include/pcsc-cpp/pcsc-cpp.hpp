@@ -45,7 +45,7 @@ using ContextPtr = std::shared_ptr<Context>;
 /** Returns the value of the response status bytes SW1 and SW2 as a single status word SW. */
 inline constexpr uint16_t toSW(byte_vector::value_type sw1, byte_vector::value_type sw2)
 {
-    return sw1 << 8 | sw2;
+    return uint16_t(sw1 << 8) | sw2;
 }
 
 /** Struct that wraps response APDUs. */
@@ -248,8 +248,8 @@ public:
 
 private:
     CardImplPtr card;
-    Protocol _protocol;
     byte_vector _atr;
+    Protocol _protocol = Protocol::UNDEFINED;
     bool transactionInProgress = false;
 };
 

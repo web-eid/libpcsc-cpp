@@ -37,7 +37,7 @@ class Context
 public:
     Context()
     {
-        SCard(EstablishContext, SCARD_SCOPE_USER, nullptr, nullptr, &contextHandle);
+        SCard(EstablishContext, DWORD(SCARD_SCOPE_USER), nullptr, nullptr, &contextHandle);
         if (!contextHandle) {
             THROW(ScardError,
                   "Context:SCardEstablishContext: service unavailable "
