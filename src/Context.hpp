@@ -55,16 +55,12 @@ public:
         }
     }
 
+    PCSC_CPP_DISABLE_COPY_MOVE(Context);
+
     SCARDCONTEXT handle() const { return contextHandle; }
 
 private:
     SCARDCONTEXT contextHandle = 0;
-
-    // The rule of five (C++ Core guidelines C.21).
-    Context(const Context&) = delete;
-    Context& operator=(const Context&) = delete;
-    Context(Context&&) = delete;
-    Context& operator=(Context&&) = delete;
 };
 
 } // namespace pcsc_cpp

@@ -111,11 +111,7 @@ public:
         }
     }
 
-    // The rule of five (C++ Core guidelines C.21).
-    CardImpl(const CardImpl& other) = delete;
-    CardImpl(CardImpl&& other) noexcept = delete;
-    CardImpl& operator=(const CardImpl& other) = delete;
-    CardImpl& operator=(CardImpl&& other) noexcept = delete;
+    PCSC_CPP_DISABLE_COPY_MOVE(CardImpl);
 
     bool readerHasPinPad() const
     {

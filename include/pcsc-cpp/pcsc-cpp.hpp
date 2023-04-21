@@ -28,6 +28,13 @@
 #include <vector>
 #include <limits>
 
+// The rule of five (C++ Core guidelines C.21).
+#define PCSC_CPP_DISABLE_COPY_MOVE(Class)                                                          \
+    Class(const Class&) = delete;                                                                  \
+    Class& operator=(const Class&) = delete;                                                       \
+    Class(Class&&) = delete;                                                                       \
+    Class& operator=(Class&&) = delete
+
 namespace pcsc_cpp
 {
 
@@ -216,12 +223,7 @@ public:
     public:
         TransactionGuard(const CardImpl& CardImpl, bool& inProgress);
         ~TransactionGuard();
-
-        // The rule of five (C++ Core guidelines C.21).
-        TransactionGuard(const TransactionGuard&) = delete;
-        TransactionGuard& operator=(const TransactionGuard&) = delete;
-        TransactionGuard(TransactionGuard&&) = delete;
-        TransactionGuard& operator=(TransactionGuard&&) = delete;
+        PCSC_CPP_DISABLE_COPY_MOVE(TransactionGuard);
 
     private:
         const CardImpl& card;
@@ -231,12 +233,7 @@ public:
     SmartCard(const ContextPtr& context, const string_t& readerName, byte_vector atr);
     SmartCard(); // Null object constructor.
     ~SmartCard();
-
-    // The rule of five.
-    SmartCard(const SmartCard&) = delete;
-    SmartCard& operator=(const SmartCard&) = delete;
-    SmartCard(SmartCard&&) = delete;
-    SmartCard& operator=(SmartCard&&) = delete;
+    PCSC_CPP_DISABLE_COPY_MOVE(SmartCard);
 
     TransactionGuard beginTransaction();
     ResponseApdu transmit(const CommandApdu& command) const;
