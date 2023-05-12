@@ -89,10 +89,9 @@ public:
                   feature.data(), DWORD(feature.size()), &size);
             for (auto p = feature.cbegin(); DWORD(std::distance(feature.cbegin(), p)) < size;) {
                 unsigned int tag = *p++;
-                unsigned int len = *p++;
                 unsigned int value = 0;
-                for (unsigned int i = 0; i < len; ++i)
-                    value |= (unsigned int)(*p++ << 8) * i;
+                for (unsigned int i = 0, len = *p++; i < len; ++i)
+                    value |= unsigned(*p++) << 8 * i;
                 features[DRIVER_FEATURES(tag)] = ntohl(value);
             }
         } catch (const ScardError&) {
