@@ -36,20 +36,20 @@ using namespace std::string_literals;
 #undef LOBYTE
 #endif
 
-constexpr unsigned char HIBYTE(size_t w)
+constexpr byte_type HIBYTE(size_t w)
 {
-    return static_cast<unsigned char>((w >> 8) & 0xff);
+    return static_cast<byte_type>((w >> 8) & 0xff);
 }
-constexpr unsigned char LOBYTE(size_t w)
+constexpr byte_type LOBYTE(size_t w)
 {
-    return static_cast<unsigned char>(w & 0xff);
+    return static_cast<byte_type>(w & 0xff);
 }
 
 namespace
 {
 
-const unsigned char DER_SEQUENCE_TYPE_TAG = 0x30;
-const unsigned char DER_TWO_BYTE_LENGTH = 0x82;
+const byte_type DER_SEQUENCE_TYPE_TAG = 0x30;
+const byte_type DER_TWO_BYTE_LENGTH = 0x82;
 
 class UnexpectedResponseError : public Error
 {
@@ -158,7 +158,7 @@ byte_vector readBinary(const SmartCard& card, const size_t length, const size_t 
 
         readBinary.p1 = HIBYTE(offset);
         readBinary.p2 = LOBYTE(offset);
-        readBinary.le = static_cast<unsigned char>(blockLengthVar);
+        readBinary.le = static_cast<byte_type>(blockLengthVar);
 
         auto response = card.transmit(readBinary);
 

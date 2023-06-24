@@ -38,7 +38,8 @@
 namespace pcsc_cpp
 {
 
-using byte_vector = std::vector<unsigned char>;
+using byte_type = unsigned char;
+using byte_vector = std::vector<byte_type>;
 #ifdef _WIN32
 using string_t = std::wstring;
 #else
@@ -50,7 +51,7 @@ class Context;
 using ContextPtr = std::shared_ptr<Context>;
 
 /** Returns the value of the response status bytes SW1 and SW2 as a single status word SW. */
-inline constexpr uint16_t toSW(byte_vector::value_type sw1, byte_vector::value_type sw2)
+inline constexpr uint16_t toSW(byte_type sw1, byte_type sw2)
 {
     return uint16_t(sw1 << 8) | sw2;
 }
@@ -69,15 +70,15 @@ struct ResponseApdu
         WRONG_LE_LENGTH = 0x6c
     };
 
-    byte_vector::value_type sw1 {};
-    byte_vector::value_type sw2 {};
+    byte_type sw1 {};
+    byte_type sw2 {};
 
     byte_vector data;
 
     static const size_t MAX_DATA_SIZE = 256;
     static const size_t MAX_SIZE = MAX_DATA_SIZE + 2; // + sw1 and sw2
 
-    ResponseApdu(byte_vector::value_type s1, byte_vector::value_type s2, byte_vector d = {}) :
+    ResponseApdu(byte_type s1, byte_type s2, byte_vector d = {}) :
         sw1(s1), sw2(s2), data(std::move(d))
     {
     }
@@ -116,10 +117,10 @@ struct ResponseApdu
 /** Struct that wraps command APDUs. */
 struct CommandApdu
 {
-    unsigned char cla;
-    unsigned char ins;
-    unsigned char p1;
-    unsigned char p2;
+    byte_type cla;
+    byte_type ins;
+    byte_type p1;
+    byte_type p2;
     unsigned short le;
     // Lc is data.size()
     byte_vector data;
@@ -127,8 +128,8 @@ struct CommandApdu
     static const size_t MAX_DATA_SIZE = 255;
     static const unsigned short LE_UNUSED = std::numeric_limits<unsigned short>::max();
 
-    CommandApdu(unsigned char c, unsigned char i, unsigned char pp1, unsigned char pp2,
-                byte_vector d = {}, unsigned short l = LE_UNUSED) :
+    CommandApdu(byte_type c, byte_type i, byte_type pp1, byte_type pp2, byte_vector d = {},
+                unsigned short l = LE_UNUSED) :
         cla(c),
         ins(i), p1(pp1), p2(pp2), le(l), data(std::move(d))
     {
@@ -188,7 +189,7 @@ struct CommandApdu
         auto bytes = byte_vector {cla, ins, p1, p2};
 
         if (!data.empty()) {
-            bytes.push_back(static_cast<unsigned char>(data.size()));
+            bytes.push_back(static_cast<byte_type>(data.size()));
             bytes.insert(bytes.end(), data.cbegin(), data.cend());
         }
 
@@ -196,7 +197,7 @@ struct CommandApdu
             // TODO: EstEID spec: the maximum value of Le is 0xFE
             if (le > ResponseApdu::MAX_DATA_SIZE)
                 throw std::invalid_argument("LE larger than response size");
-            bytes.push_back(static_cast<unsigned char>(le));
+            bytes.push_back(static_cast<byte_type>(le));
         }
 
         return bytes;
