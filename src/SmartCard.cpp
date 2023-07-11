@@ -122,7 +122,7 @@ public:
 
     ResponseApdu transmitBytes(const byte_vector& commandBytes) const
     {
-        auto responseBytes = byte_vector(ResponseApdu::MAX_SIZE, 0);
+        byte_vector responseBytes(ResponseApdu::MAX_SIZE, 0);
         auto responseLength = DWORD(responseBytes.size());
 
         // TODO: debug("Sending:  " + bytes2hexstr(commandBytes))
@@ -157,9 +157,6 @@ public:
         data->bNumberMessage = CCIDDefaultInvitationMessage;
         data->wLangId = lang;
         data->bMsgIndex = NoInvitationMessage;
-        data->bTeoPrologue[0] = 0x00;
-        data->bTeoPrologue[1] = 0x00;
-        data->bTeoPrologue[2] = 0x00;
         data->ulDataLength = uint32_t(commandBytes.size() + 1);
         cmd.insert(cmd.cend(), commandBytes.cbegin(), commandBytes.cend());
         cmd.resize(cmd.size() + 1);
@@ -167,7 +164,7 @@ public:
         DWORD ioctl = features.at(features.find(FEATURE_VERIFY_PIN_START) != features.cend()
                                       ? FEATURE_VERIFY_PIN_START
                                       : FEATURE_VERIFY_PIN_DIRECT);
-        auto responseBytes = byte_vector(ResponseApdu::MAX_SIZE, 0);
+        byte_vector responseBytes(ResponseApdu::MAX_SIZE, 0);
         DWORD responseLength = DWORD(responseBytes.size());
         SCard(Control, cardHandle, ioctl, cmd.data(), DWORD(cmd.size()),
               LPVOID(responseBytes.data()), DWORD(responseBytes.size()), &responseLength);
@@ -230,7 +227,7 @@ private:
 
     void getMoreResponseData(ResponseApdu& response) const
     {
-        auto getResponseCommand = byte_vector {0x00, 0xc0, 0x00, 0x00, 0x00};
+        byte_vector getResponseCommand {0x00, 0xc0, 0x00, 0x00, 0x00};
 
         auto newResponse = ResponseApdu(response.sw1, response.sw2);
 
@@ -241,7 +238,8 @@ private:
                                  newResponse.data.cend());
         }
 
-        response = {ResponseApdu::OK, 0};
+        response.sw1 = ResponseApdu::OK;
+        response.sw2 = 0;
     }
 };
 
@@ -275,7 +273,7 @@ SmartCard::~SmartCard() = default;
 SmartCard::TransactionGuard SmartCard::beginTransaction()
 {
     REQUIRE_NON_NULL(card)
-    return SmartCard::TransactionGuard {*card, transactionInProgress};
+    return {*card, transactionInProgress};
 }
 
 bool SmartCard::readerHasPinPad() const
