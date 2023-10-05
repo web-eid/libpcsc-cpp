@@ -43,7 +43,7 @@ namespace
 
 using namespace pcsc_cpp;
 
-inline SmartCard::Protocol convertToSmartCardProtocol(const DWORD protocol)
+constexpr SmartCard::Protocol convertToSmartCardProtocol(const DWORD protocol)
 {
     switch (protocol) {
     case SCARD_PROTOCOL_UNDEFINED:
@@ -88,11 +88,11 @@ public:
             SCard(Control, cardHandle, DWORD(CM_IOCTL_GET_FEATURE_REQUEST), nullptr, 0U,
                   feature.data(), DWORD(feature.size()), &size);
             for (auto p = feature.cbegin(); DWORD(std::distance(feature.cbegin(), p)) < size;) {
-                unsigned int tag = *p++;
-                unsigned int value = 0;
+                auto tag = DRIVER_FEATURES(*p++);
+                uint32_t value = 0;
                 for (unsigned int i = 0, len = *p++; i < len; ++i)
-                    value |= unsigned(*p++) << 8 * i;
-                features[DRIVER_FEATURES(tag)] = ntohl(value);
+                    value |= uint32_t(*p++) << 8 * i;
+                features[tag] = ntohl(value);
             }
         } catch (const ScardError&) {
             // Ignore driver errors during card feature requests.
@@ -157,15 +157,14 @@ public:
         data->bNumberMessage = CCIDDefaultInvitationMessage;
         data->wLangId = lang;
         data->bMsgIndex = NoInvitationMessage;
-        data->ulDataLength = uint32_t(commandBytes.size() + 1);
+        data->ulDataLength = uint32_t(commandBytes.size());
         cmd.insert(cmd.cend(), commandBytes.cbegin(), commandBytes.cend());
-        cmd.resize(cmd.size() + 1);
 
         DWORD ioctl = features.at(features.find(FEATURE_VERIFY_PIN_START) != features.cend()
                                       ? FEATURE_VERIFY_PIN_START
                                       : FEATURE_VERIFY_PIN_DIRECT);
         byte_vector responseBytes(ResponseApdu::MAX_SIZE, 0);
-        DWORD responseLength = DWORD(responseBytes.size());
+        auto responseLength = DWORD(responseBytes.size());
         SCard(Control, cardHandle, ioctl, cmd.data(), DWORD(cmd.size()),
               LPVOID(responseBytes.data()), DWORD(responseBytes.size()), &responseLength);
 
@@ -293,7 +292,7 @@ ResponseApdu SmartCard::transmit(const CommandApdu& command) const
 
 ResponseApdu SmartCard::transmitCTL(const CommandApdu& command, uint16_t lang, uint8_t minlen) const
 {
-    REQUIRE_NON_NULL(card);
+    REQUIRE_NON_NULL(card)
     if (!transactionInProgress) {
         THROW(std::logic_error, "Call SmartCard::transmit() inside a transaction");
     }
