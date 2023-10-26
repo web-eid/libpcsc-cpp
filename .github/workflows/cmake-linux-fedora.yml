@@ -1,0 +1,38 @@
+name: CMake (Fedora Linux)
+
+on: [push, pull_request]
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        container: ['fedora:latest']
+        experimental: [false]
+        include:
+          - container: 'fedora:rawhide'
+            experimental: true
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: Install Deps
+        run: dnf install -y git gcc-c++ cmake pcsc-lite-devel gtest-devel
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        run: cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
+
+      - name: Build
+        run: cmake --build build --config $BUILD_TYPE -j $(nproc)
+
+      - name: Test
+        run: ctest -V -C $BUILD_TYPE --test-dir build
