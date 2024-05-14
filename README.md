@@ -2,6 +2,9 @@
 
 ![European Regional Development Fund](https://github.com/open-eid/DigiDoc4-Client/blob/master/client/images/EL_Regionaalarengu_Fond.png)
 
+**NB! Please note that the libpcsc-cpp code was moved to libelectronic-id repository.<br>
+We won't be accepting pull requests or responding to issues in this repository anymore. We are happy to accept your proposals in the libelectronic-id repository: https://github.com/web-eid/libelectronic-id.**
+
 C++ library for accessing smart cards using the PC/SC API.
 
 ## Usage
